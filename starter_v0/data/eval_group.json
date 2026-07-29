@@ -3,5 +3,101 @@
   "dataset_role": "group",
   "description": "Template để NHÓM tự viết đúng 10 case: 5 single-turn dùng query và 5 multi-turn dùng turns. Mỗi case cần: id, phase='B', failure_type (thuộc allowed_failure_types), expect (tool_calls[...] hoặc no_tool=true), và metadata.what_it_tests. File để trống có chủ đích vì mỗi nhóm phải tự thiết kế các case này.",
   "allowed_failure_types": ["wrong_tool", "wrong_arg_value", "wrong_boundary", "unnecessary_tool", "out_of_scope", "missing_info"],
-  "cases": []
+  "cases": [
+    {
+      "id": "G01_reddit_routing",
+      "phase": "B", "suite": "group",
+      "query": "Mọi người trên Reddit đang bàn gì về ChatGPT?",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "reddit_search", "args": {"query": "ChatGPT"}}]},
+      "metadata": {"skill": "routing_reddit", "difficulty": "medium", "what_it_tests": "Thảo luận cộng đồng Reddit → reddit_search, không phải social_search hay lookup."}
+    },
+    {
+      "id": "G02_reddit_subreddit_sort_arg",
+      "phase": "B", "suite": "group",
+      "query": "Tìm bài hot nhất về AI trong subreddit MachineLearning",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "reddit_search", "args": {"query": "AI", "subreddit": "MachineLearning", "sort": "hot"}}]},
+      "metadata": {"skill": "arg_reddit_subreddit_sort", "difficulty": "medium", "what_it_tests": "'hot nhất' → sort=hot; 'subreddit MachineLearning' → subreddit arg, không để vào query."}
+    },
+    {
+      "id": "G03_reddit_limit_arg",
+      "phase": "B", "suite": "group",
+      "query": "Tìm 3 bài mới nhất về Python trong subreddit learnpython",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "reddit_search", "args": {"query": "Python", "subreddit": "learnpython", "sort": "new", "limit": 3}}]},
+      "metadata": {"skill": "arg_reddit_limit_sort", "difficulty": "medium", "what_it_tests": "'3 bài' → limit=3; 'mới nhất' → sort=new; subreddit truyền đúng."}
+    },
+    {
+      "id": "G04_pdf_read_url_given",
+      "phase": "B", "suite": "group",
+      "query": "Đọc nội dung PDF này: https://arxiv.org/pdf/1706.03762.pdf",
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "pdf_read", "args": {"url": "https://arxiv.org/pdf/1706.03762.pdf"}}]},
+      "metadata": {"skill": "routing_pdf_read", "difficulty": "medium", "what_it_tests": "Đã có URL file .pdf → pdf_read, không phải fetch hay paper_text."}
+    },
+    {
+      "id": "G05_pdf_read_max_pages_arg",
+      "phase": "B", "suite": "group",
+      "query": "Đọc 3 trang đầu của PDF: https://arxiv.org/pdf/2303.08774.pdf",
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "pdf_read", "args": {"url": "https://arxiv.org/pdf/2303.08774.pdf", "max_pages": 3}}]},
+      "metadata": {"skill": "arg_pdf_max_pages", "difficulty": "easy", "what_it_tests": "'3 trang đầu' → max_pages=3, không dùng default 5."}
+    },
+    {
+      "id": "G06_pdf_read_after_url",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Đọc file PDF này giúp mình"},
+        {"role": "user", "content": "Link đây: https://arxiv.org/pdf/1706.03762.pdf"}
+      ],
+      "failure_type": "missing_info",
+      "expect": {"tool_calls": [{"name": "pdf_read", "args": {"url": "https://arxiv.org/pdf/1706.03762.pdf"}}]},
+      "metadata": {"skill": "multiturn_pdf_url", "difficulty": "medium", "what_it_tests": "Turn 1 thiếu URL → clarify; turn 2 cung cấp URL → gọi pdf_read ngay, không hỏi lại."}
+    },
+    {
+      "id": "G07_reddit_carry_subreddit",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Tìm bài về Python trong subreddit learnpython"},
+        {"role": "user", "content": "Giờ tìm về JavaScript, vẫn trong subreddit đó nhé"}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "reddit_search", "args": {"query": "JavaScript", "subreddit": "learnpython"}}]},
+      "metadata": {"skill": "multiturn_carry_subreddit", "difficulty": "hard", "what_it_tests": "Carry subreddit='learnpython' từ turn 1, chỉ cập nhật query='JavaScript'; không hỏi lại subreddit."}
+    },
+    {
+      "id": "G08_reddit_sort_update",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Tìm bài mới nhất về machine learning trên Reddit"},
+        {"role": "user", "content": "Đổi sang sắp xếp top đi, vẫn tìm machine learning"}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "reddit_search", "args": {"query": "machine learning", "sort": "top"}}]},
+      "metadata": {"skill": "multiturn_sort_update", "difficulty": "medium", "what_it_tests": "Carry query='machine learning', cập nhật sort: new → top."}
+    },
+    {
+      "id": "G09_lookup_then_reddit_switch",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Tìm tin về OpenAI trên web"},
+        {"role": "user", "content": "Còn trên Reddit thì mọi người bàn gì về OpenAI?"}
+      ],
+      "failure_type": "wrong_tool",
+      "expect": {"tool_calls": [{"name": "reddit_search", "args": {"query": "OpenAI"}}]},
+      "metadata": {"skill": "multiturn_tool_switch", "difficulty": "hard", "what_it_tests": "Turn 2 chuyển nguồn sang Reddit → reddit_search(query=OpenAI), carry query, không gọi lại lookup."}
+    },
+    {
+      "id": "G10_pdf_carry_url_update_pages",
+      "phase": "B", "suite": "group",
+      "turns": [
+        {"role": "user", "content": "Đọc 2 trang đầu của PDF: https://arxiv.org/pdf/2303.08774.pdf"},
+        {"role": "user", "content": "Đổi lấy 5 trang thôi, vẫn file đó nhé"}
+      ],
+      "failure_type": "wrong_arg_value",
+      "expect": {"tool_calls": [{"name": "pdf_read", "args": {"url": "https://arxiv.org/pdf/2303.08774.pdf", "max_pages": 5}}]},
+      "metadata": {"skill": "multiturn_carry_url_update_pages", "difficulty": "hard", "what_it_tests": "Carry url từ turn 1, cập nhật max_pages 2→5; không hỏi lại URL."}
+    }
+  ]
 }

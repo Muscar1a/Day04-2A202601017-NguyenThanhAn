@@ -9,22 +9,29 @@
 tools:
   # ---------------- Core tools ----------------
   - name: clarify
-    description: "Gửi một câu hỏi cho người dùng."
+    description: >
+      Hỏi lại user khi thiếu thông tin hoặc cần xác nhận.
+      response_type="text": khi thiếu handle, URL, query cụ thể.
+      response_type="yes_no": BẮT BUỘC dùng khi user yêu cầu gửi / đăng / post / chia sẻ nội dung ra ngoài (Telegram, email, mạng xã hội...).
     parameters:
       type: object
       properties:
         question: {type: string, default: "", description: "Câu hỏi"}
-        response_type: {type: string, enum: [text, yes_no, choice], default: "text", description: "Kiểu trả lời"}
+        response_type: {type: string, enum: [text, yes_no, choice], default: "text", description: "text=hỏi thông tin; yes_no=xác nhận hành động ghi"}
         options: {type: array, default: [], items: {type: string}, description: "Các lựa chọn"}
       required: [question]
 
   - name: timeline
-    description: "Lấy các bài đăng gần đây."
+    description: >
+      Lấy tweet / bài đăng gần đây của một tài khoản X/Twitter cụ thể.
+      Dùng khi user hỏi về bài của MỘT người (không phải chủ đề chung).
+      limit: BẮT BUỘC truyền nếu user nêu số lượng ("5 tweet" → limit=5, "lấy 3" → limit=3). Multi-turn: giữ limit đã biết từ turn trước.
+      screenname map: Sam Altman→sama, Elon Musk→elonmusk, Andrej Karpathy→karpathy, Yann LeCun→ylecun. Nếu không biết handle → gọi clarify(text) trước.
     parameters:
       type: object
       properties:
-        screenname: {type: string, default: "", description: "Tên tài khoản"}
-        limit: {type: integer, default: 5, description: "Số lượng"}
+        screenname: {type: string, default: "", description: "Handle tài khoản (không có @)"}
+        limit: {type: integer, default: 5, description: "Số tweet cần lấy; truyền đúng số user yêu cầu"}
       required: [screenname]
 
   - name: social_search
@@ -38,13 +45,17 @@ tools:
       required: [query]
 
   - name: lookup
-    description: "Tra cứu thông tin trên internet."
+    description: >
+      Tìm kiếm tin tức / thông tin trên web khi chưa có URL cụ thể.
+      topic: luôn là "news" khi user dùng "tin tức / thời sự / nổi bật / hôm nay / tuần này".
+      timeframe: BẮT BUỘC truyền đúng nếu user nêu rõ thời gian: "hôm nay" / "today" → "day"; "tuần này" / "this week" → "week". KHÔNG để mặc định nếu user đã nêu.
+      query: 1–2 từ khóa ngắn (AI, robotics, OpenAI). KHÔNG thêm "news", "today", "latest", "hôm nay".
     parameters:
       type: object
       properties:
-        query: {type: string, default: "", description: "Truy vấn"}
-        topic: {type: string, enum: [general, news], default: "general", description: "Phân loại"}
-        timeframe: {type: string, enum: [day, week, month, year], default: "week", description: "Khoảng thời gian"}
+        query: {type: string, default: "", description: "1-2 từ khóa ngắn, không thêm news/today/latest"}
+        topic: {type: string, enum: [general, news], default: "general", description: "news=tin tức/thời sự; general=thông tin chung"}
+        timeframe: {type: string, enum: [day, week, month, year], default: "week", description: "day=hôm nay; week=tuần này; truyền đúng nếu user nêu rõ"}
         max_results: {type: integer, default: 5, description: "Số kết quả"}
       required: [query]
 
@@ -116,3 +127,73 @@ tools:
         max_pages: {type: integer, default: 5, description: "Số trang"}
         max_chars: {type: integer, default: 8000, description: "Số ký tự"}
       required: [arxiv_url]
+
+  # ---------------- New / extension tools ----------------
+  - name: reddit_search
+    description: "Tìm thảo luận trên Reddit."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Từ khóa"}
+        subreddit: {type: string, default: "", description: "Subreddit (không có r/)"}
+        sort: {type: string, enum: [relevance, hot, new, top], default: "relevance", description: "Sắp xếp"}
+        limit: {type: integer, default: 5, description: "Số lượng"}
+      required: [query]
+
+  - name: github_search
+    description: "Tìm repository trên GitHub."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Từ khóa"}
+        sort: {type: string, enum: [best_match, stars, forks, updated], default: "best_match", description: "Sắp xếp"}
+        limit: {type: integer, default: 5, description: "Số lượng"}
+      required: [query]
+
+  - name: semantic_scholar
+    description: "Tìm bài báo học thuật đa lĩnh vực."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Từ khóa"}
+        max_results: {type: integer, default: 5, description: "Số lượng"}
+      required: [query]
+
+  - name: pdf_read
+    description: "Đọc text từ PDF có URL."
+    parameters:
+      type: object
+      properties:
+        url: {type: string, default: "", description: "URL của file PDF"}
+        max_pages: {type: integer, default: 5, description: "Số trang tối đa"}
+        max_chars: {type: integer, default: 8000, description: "Số ký tự tối đa"}
+      required: [url]
+
+  - name: github_file
+    description: "Đọc file hoặc thư mục trong GitHub repo."
+    parameters:
+      type: object
+      properties:
+        repo: {type: string, default: "", description: "owner/repo"}
+        path: {type: string, default: "", description: "Đường dẫn file hoặc thư mục"}
+        ref: {type: string, default: "HEAD", description: "Branch hoặc commit"}
+      required: [repo, path]
+
+  - name: stackoverflow
+    description: "Tìm câu hỏi trên Stack Overflow."
+    parameters:
+      type: object
+      properties:
+        query: {type: string, default: "", description: "Từ khóa"}
+        tags: {type: string, default: "", description: "Tag lọc (vd: python)"}
+        sort: {type: string, enum: [relevance, votes, creation, activity], default: "relevance", description: "Sắp xếp"}
+        limit: {type: integer, default: 5, description: "Số lượng"}
+      required: [query]
+
+  - name: trending
+    description: "Lấy trending topics trên X/Twitter."
+    parameters:
+      type: object
+      properties:
+        country: {type: string, default: "vietnam", description: "Quốc gia (vd: vietnam, united_states)"}
+      required: []

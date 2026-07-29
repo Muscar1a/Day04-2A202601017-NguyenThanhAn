@@ -8,7 +8,7 @@
 
 - Team:
 - Members:
-- Provider/model:
+- Provider/model: OpenRouter (inclusionai/ling-3.0-flash:free)
 
 ---
 
@@ -79,52 +79,78 @@ Fill from `artifacts/version_log.csv` and `runs/*.json`.
 | Version | Prompt/tool change | Hypothesis | Metric name | Before | After | Run File |
 |---|---|---|---|---:|---:|---|
 | v0 | baseline | — | case_accuracy | — | 0.40 | v0_B_base_openrouter_20260729T103234896651.json |
-| v1 |  |  |  |  |  |  |
-| v2 |  |  |  |  |  |  |
-| v3 |  |  |  |  |  |  |
+| v0 | | | tool_routing_accuracy | — | 0.80 | |
+| v0 | | | argument_accuracy | — | 0.40 | |
+| v0 | | | multiturn_accuracy | — | 0.00 | |
+| v1 | tools.yaml: convention query=keyword ngắn, topic/timeframe trigger, name→handle map, trích limit | tools.yaml descriptions sẽ guide model → fix R03/R06/R13 (verbose) và R05/M01/M05 (limit=None) | case_accuracy | 0.40 | 0.40 | v1_B_base_openrouter_20260729T110327146831.json |
+| v1 | | | tool_routing_accuracy | 0.80 | 0.70 | |
+| v1 | | | argument_accuracy | 0.40 | 0.40 | |
+| v1 | | | multiturn_accuracy | 0.00 | 0.00 | |
+| v2 | system_prompt.md: tool routing rules, clarify boundary (thiếu handle/URL→text; ghi→yes_no), arg rules (handle map, limit, query ngắn, topic/timeframe), multi-turn carry | Clarify rules fix R10/R12; arg rules fix R05/R06; carry rules fix M01-M06 | case_accuracy | 0.40 | 0.55 | v2_B_base_openrouter_20260729T115719583464.json |
+| v2 | | | tool_routing_accuracy | 0.70 | 0.80 | |
+| v2 | | | argument_accuracy | 0.40 | 0.55 | |
+| v2 | | | multiturn_accuracy | 0.00 | 0.1667 | |
+| v3 | system_prompt.md: thêm CRITICAL RULES (limit/timeframe/clarify yes_no/multi-turn trigger). tools.yaml: viết lại description của clarify/timeline/lookup với convention nhúng trực tiếp | CRITICAL RULES sẽ fix toàn bộ 9 cases FAIL v2; dự báo case_accuracy ≥ 0.90 | case_accuracy | 0.55 | 0.5789 | v3_B_base_openrouter_20260729T121419257606.json |
+| v3 | | | tool_routing_accuracy | 0.80 | 0.8421 | |
+| v3 | | | argument_accuracy | 0.55 | 0.5789 | |
+| v3 | | | multiturn_accuracy | 0.1667 | 0.40 | (19/20 measured; M06 provider error) |
 
 ## B2. Failure analysis
 
-Use actual failures from `results[*].result.failures`.
+Dữ liệu từ `results[*].result.failures` của v2 (baseline failure) và v3 (sau fix).
 
-| Case ID | Failure Type | Actual Tool Calls | What Failed | Fix |
+| Case ID | Failure Type v2 | Failure Type v3 | What Failed (v3 log) | Trạng thái |
 |---|---|---|---|---|
-| R03 | wrong_arg_value | lookup + social_search | query="AI news today latest breakthroughs" (verbose), topic=general thay vì news, gọi thêm social_search không cần | Thêm convention query=keyword ngắn, topic=news khi có "tin tức" vào `tools.yaml` |
-| R05 | wrong_arg_value | timeline | limit=None thay vì 10 | Thêm convention trích limit từ số trong câu vào `tools.yaml` |
-| R06 | wrong_arg_value | lookup | topic=general thay vì news, timeframe=None thay vì week | Thêm trigger "tuần này/hôm nay" → timeframe vào `tools.yaml` |
-| R10 | missing_info | timeline(screenname=sama) | Đoán bừa handle thay vì gọi clarify | Thêm rule "thiếu handle → clarify bắt buộc" vào `system_prompt.md` |
-| R12 | wrong_boundary | clarify(response_type=text) | Gọi đúng clarify nhưng sai response_type (text thay vì yes_no) | Thêm rule "hành động ghi → clarify(yes_no)" vào `system_prompt.md` |
-| R13 | wrong_arg_value | lookup + social_search | query verbose, topic=general, timeframe=None | Cùng fix với R03/R06 trong `tools.yaml` |
-| M01 | wrong_arg_value | timeline | limit=None (không carry limit=5 từ turn 1) | Thêm multi-turn carry rule vào `system_prompt.md` |
-| M02 | wrong_arg_value | lookup | query="robotics news today" (verbose), topic=general | Fix tools.yaml convention + system_prompt carry rule |
-| M03 | wrong_arg_value | timeline × 3 | limit=None, gọi timeline 3 lần (một cho mỗi turn) | Thêm rule "chỉ xử lý latest turn" vào `system_prompt.md` |
-| M04 | missing_info | (không gọi tool) | Sau khi user cung cấp URL, latest turn xác nhận → model trả text, không gọi fetch | Thêm rule "turn xác nhận sau khi có đủ info → trigger tool" vào `system_prompt.md` |
-| M05 | wrong_arg_value | timeline | limit=None (không carry limit=3 từ turn 2) | Cùng fix với M01 |
-| M06 | wrong_arg_value | lookup | query="OpenAI news latest" (verbose), topic=general | Cùng fix với R03 trong `tools.yaml` |
+| R01 | wrong_tool | wrong_tool | missing tool call timeline (model trả về null thay vì gọi tool) | ❌ Vẫn fail |
+| R03 | wrong_tool | wrong_tool | lookup đúng (query=AI, timeframe=day, topic=news) nhưng gọi thêm `trending` không cần | ❌ Regression mới |
+| R04 | — | wrong_tool | missing tool call fetch (model không gọi tool) | ❌ Mới xuất hiện v3 |
+| R05 | wrong_arg_value | wrong_arg_value | limit=None thay vì 10 — CRITICAL RULE #1 không được follow | ❌ Vẫn fail |
+| R12 | wrong_boundary | wrong_boundary | clarify(response_type=text) thay vì yes_no — CRITICAL RULE #3 không được follow | ❌ Vẫn fail |
+| M01 | wrong_arg_value | wrong_arg_value | limit=None (không carry limit=5 từ turn 1) | ❌ Vẫn fail |
+| M02 | missing_tool_call | — | **FIX**: lookup(query=robotics, timeframe=day, topic=news) đúng hoàn toàn | ✅ Đã fix |
+| M03 | wrong_arg_value | wrong_arg_value | limit=None (không carry limit=3 từ turn cuối) | ❌ Vẫn fail |
+| M04 | missing_tool_call | — | **FIX**: fetch(url=https://anthropic.com/news/claude) đúng hoàn toàn | ✅ Đã fix |
+| M05 | wrong_arg_value | wrong_arg_value | limit=None (không carry limit=3 sau khi đổi từ 10→3) | ❌ Vẫn fail |
+| M06 | missing_tool_call | provider_error | Rate limit error — không đo được | ⚠️ Provider error |
+
+**Nhận xét từ log thực tế:**
+- CRITICAL RULES giúp fix M02 và M04 (multi-turn trigger) — 2/9 cases được cải thiện.
+- `limit` vẫn là điểm yếu cốt lõi: model `inclusionai/ling-3.0-flash:free` liên tục bỏ qua `limit` dù đã có rule và description rõ ràng → khả năng do model tier thấp không follow instruction tốt.
+- R03 sinh lỗi mới: model gọi thêm `trending` (extra tool) — CRITICAL RULES không ngăn được over-calling.
+- R12 (`clarify yes_no`) vẫn sai dù đã nhúng vào description — model ưu tiên hỏi nội dung trước thay vì xác nhận.
 
 ## B3. Team eval cases
 
-List the 10 cases added to `data/eval_group.json`:
+10 cases nhóm tự viết trong `data/eval_group.json` — tập trung vào 2 tool mới: `reddit_search` và `pdf_read`.
 
-- 5 single-turn
-- 5 multi-turn
+**Single-turn (5 cases):**
 
-This section is for the mandatory team-authored eval set. Optional built-ins do
-not belong here.
-
-File template để trống có chủ đích; nhóm phải tự thiết kế đủ 10 case.
-
-| Case ID | What It Tests | Expected Tool/Behavior | Result |
+| Case ID | What It Tests | Expected Tool + Args | Difficulty |
 |---|---|---|---|
-|  |  |  |  |
+| G01_reddit_routing | Thảo luận cộng đồng Reddit → `reddit_search`, không phải `social_search` hay `lookup` | `reddit_search(query="ChatGPT")` | medium |
+| G02_reddit_subreddit_sort_arg | "hot nhất" → `sort=hot`; "subreddit MachineLearning" → `subreddit` arg, không để vào query | `reddit_search(query="AI", subreddit="MachineLearning", sort="hot")` | medium |
+| G03_reddit_limit_arg | "3 bài" → `limit=3`; "mới nhất" → `sort=new`; subreddit truyền đúng | `reddit_search(query="Python", subreddit="learnpython", sort="new", limit=3)` | medium |
+| G04_pdf_read_url_given | Đã có URL file `.pdf` → `pdf_read`, không phải `fetch` hay `paper_text` | `pdf_read(url="https://arxiv.org/pdf/1706.03762.pdf")` | medium |
+| G05_pdf_read_max_pages_arg | "3 trang đầu" → `max_pages=3`, không dùng default 5 | `pdf_read(url="https://arxiv.org/pdf/2303.08774.pdf", max_pages=3)` | easy |
+
+**Multi-turn (5 cases):**
+
+| Case ID | What It Tests | Expected Tool + Args (turn cuối) | Difficulty |
+|---|---|---|---|
+| G06_pdf_read_after_url | Turn 1 thiếu URL → clarify; turn 2 cung cấp URL → gọi `pdf_read` ngay, không hỏi lại | `pdf_read(url="https://arxiv.org/pdf/1706.03762.pdf")` | medium |
+| G07_reddit_carry_subreddit | Carry `subreddit="learnpython"` từ turn 1; chỉ cập nhật `query="JavaScript"` | `reddit_search(query="JavaScript", subreddit="learnpython")` | hard |
+| G08_reddit_sort_update | Carry `query="machine learning"`; cập nhật `sort: new → top` | `reddit_search(query="machine learning", sort="top")` | medium |
+| G09_lookup_then_reddit_switch | Turn 2 chuyển nguồn sang Reddit → `reddit_search`, carry query, không gọi lại `lookup` | `reddit_search(query="OpenAI")` | hard |
+| G10_pdf_carry_url_update_pages | Carry `url` từ turn 1; cập nhật `max_pages: 2 → 5` | `pdf_read(url="https://arxiv.org/pdf/2303.08774.pdf", max_pages=5)` | hard |
 
 ## B4. Live chat evidence
 
-Use `transcripts/*.transcript.json`.
+Bằng chứng phiên tương tác trực tiếp (live chat session) lưu tại `starter_v0/transcripts/v3_gemini_20260729T121158133862.transcript.json` (chạy với version `v3`, provider `gemini` / model `gemma-4-26b-a4b-it`):
 
 | Scenario/Turn | Version | Tool Calls + Args | Transcript/Run | Outcome |
 |---|---|---|---|---|
-|  |  |  |  |  |
+| Turn 1: *"Tin AI hôm nay có gì nổi bật?"* | v3 | *(Không gọi được tool do lỗi provider)* | `transcripts/v3_gemini_20260729T121158133862.transcript.json` | ❌ Provider Error: 429 RESOURCE_EXHAUSTED (Quota exceeded for gemma-4-26b) |
+| Turn 2: *"Tóm tắt 5 tweet mới nhất của @karpathy giúp mình"* | v3 | 1. `timeline(screenname="karpathy", limit=5)`<br>2. `format(template="bullets", headline="...", items=[...])` | `transcripts/v3_gemini_20260729T121158133862.transcript.json` | ✅ Success: Gọi đúng tool `timeline` trích đúng `screenname="karpathy"`, `limit=5`, sau đó gọi `format` hiển thị dạng danh sách bullets. |
 
 ## B5. Tool capability evidence
 
@@ -140,7 +166,22 @@ UI is core deliverable, not bonus. Do not list it here.
 
 ## B6. Reflection
 
-- Which fixes belonged in `system_prompt.md`?
-- Which fixes belonged in `tools.yaml`?
-- Which failure needed manual review instead of automatic grading?
-- What would you improve next?
+**Fixes thuộc về `system_prompt.md`:**
+- Quy tắc `clarify yes_no` cho write-action (R12): cần instruction-level priority, không chỉ description.
+- Multi-turn trigger (M02, M04): rule "khi đủ info → gọi tool ngay" cần nằm ở system_prompt để model xử lý context.
+- Carry rules (M01, M03, M05): limit và handle phải được carry qua turns bằng instruction rõ ràng.
+
+**Fixes thuộc về `tools.yaml`:**
+- `timeframe` trigger (R03, R13, R06): description nhúng trực tiếp mapping "hôm nay→day" hiệu quả hơn system_prompt vì gần context tool call.
+- `query` ngắn gọn (R03, R13): convention trong description giúp model chọn args đúng format.
+
+**Failures cần manual review thay vì auto-grading:**
+- R01 v3: model trả `actual_text=null` và không gọi tool — không rõ là model bị timeout hay skip. Cần xem raw response.
+- R03 v3: gọi thêm `trending` — grader đánh fail nhưng `lookup` args đúng hoàn toàn; có thể cân nhắc partial credit.
+- R08, R14 (out_of_scope): model trả lời câu toán/code thay vì từ chối — grader đánh pass nhưng behavior sai với intent.
+
+**Cải thiện tiếp theo:**
+- Đổi model sang tier cao hơn (không phải `:free`) để giảm rate limit và cải thiện instruction-following cho `limit`.
+- Thêm few-shot examples vào system_prompt cho rule `limit` — ví dụ inline "Lấy 5 tweet" → `timeline(screenname=..., limit=5)`.
+- Thêm rule chống over-calling (extra tool call như `trending` trong R03) vào system_prompt.
+- Viết thêm eval cases đo `limit` riêng để xác nhận fix.

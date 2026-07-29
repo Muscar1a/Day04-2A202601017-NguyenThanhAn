@@ -132,85 +132,101 @@ const App = () => {
 
   const activeTurn = turns.find(t => t.id === activeTurnId) || turns[0]
 
-  const handleSearchSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault()
-    if (!inputQuery.trim() || isSearching) return
+  const buildHistory = (sourceTurns: ResearchTurn[]) =>
+    sourceTurns
+      .filter(t => t.status === 'completed' && t.assistant_answer)
+      .flatMap(t => [
+        { role: 'user', content: t.user_query },
+        { role: 'assistant', content: t.assistant_answer },
+      ])
+      .slice(-10)
 
+  const submitQuery = async (query: string) => {
+    if (!query.trim() || isSearching) return
     setIsSearching(true)
-    const newTurnId = `turn-${turns.length + 1}`
-    
-    setTimeout(() => {
-      const newTurn: ResearchTurn = {
-        id: newTurnId,
-        turn_index: turns.length + 1,
-        user_query: inputQuery,
-        mode: selectedMode,
-        status: 'completed',
-        assistant_answer: `Dựa trên kết quả tìm kiếm cho truy vấn "${inputQuery}" [1]:\n\n- Phân tích tổng hợp: Hệ thống đã quét 4 nguồn dữ liệu chính xác và rút ra các kết luận quan trọng.\n- Ứng dụng thực tế: Đề xuất triển khai với các ràng buộc về ngân sách và hiệu năng.`,
-        sources: [
-          { title: `Nghiên cứu tổng quan về ${inputQuery}`, url: 'https://arxiv.org/abs/2607.001', source: 'arxiv.org', summary: 'Báo cáo chi tiết về phương pháp luận và kết quả thực nghiệm.' },
-          { title: `Dữ liệu và phân tích chuyên sâu`, url: 'https://techcrunch.com/article/ai-research', source: 'techcrunch.com', summary: 'Đánh giá thị trường và tác động doanh nghiệp.' }
-        ],
-        react_steps: [
-          {
-            round: 1,
-            thought: `Nhận truy vấn người dùng: "${inputQuery}" -> Gọi tool lookup`,
-            tool: 'lookup',
-            args: { query: inputQuery, topic: selectedMode === 'academic' ? 'general' : 'news', max_results: 4 },
-            result: { status: 'success', count: 4 },
-            timestamp: new Date().toLocaleTimeString()
-          },
-          {
-            round: 2,
-            thought: 'Tổng hợp kết quả tìm kiếm và trình bày báo cáo nghiên cứu',
-            tool: 'format',
-            args: { template: 'sections', headline: inputQuery },
-            result: { rendered: true },
-            timestamp: new Date().toLocaleTimeString()
-          }
-        ],
-        follow_ups: [
-          `Tìm hiểu thêm chi tiết về ${inputQuery}?`,
-          `Các rủi ro và thách thức khi triển khai?`,
-          `So sánh phương pháp này với các giải pháp khác?`
-        ],
-        created_at: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }
 
-      setTurns(prev => [newTurn, ...prev])
-      setActiveTurnId(newTurnId)
-      setInputQuery('')
-      setIsSearching(false)
-    }, 1200)
-  }
-
-  const handleClarifyOptionSelect = (optionText: string) => {
-    const handle = optionText.split(' ')[0]
-    const updatedTurn: ResearchTurn = {
-      ...activeTurn,
-      status: 'completed',
-      assistant_answer: `Đây là 5 bài đăng mới nhất từ tài khoản ${handle} [1]:\n\n1. Về AI Agent Training: "Các mô hình suy luận agent cần môi trường phản hồi liên tục để học từ lỗi sai."\n2. Tương lai của Coding Agent: "Lập trình viên sẽ chuyển dần sang vai trò quản trị và kiểm thử kiến trúc (Architect & Reviewer)."\n3. Cập nhật Eureka Labs: "Chuẩn bị ra mắt khóa học trực quan về nguyên lý hoạt động của Transformer."`,
-      sources: [
-        { title: `Timeline chính thức của ${handle}`, url: `https://x.com/${handle.replace('@', '')}`, source: 'x.com', summary: 'Trích xuất bài đăng gần nhất trên mạng xã hội X.' }
-      ],
-      react_steps: [
-        ...activeTurn.react_steps,
-        {
-          round: 2,
-          thought: `Người dùng chọn handle ${handle} -> Gọi tool timeline với screenname=${handle.replace('@', '')}`,
-          tool: 'timeline',
-          args: { screenname: handle.replace('@', ''), limit: 5 },
-          result: { count: 5, status: 'success' },
-          timestamp: new Date().toLocaleTimeString()
-        }
-      ],
-      follow_ups: [
-        `Phân tích thêm bài đăng số 1 của ${handle}?`,
-        `Tìm thêm các tweet khác về Eureka Labs?`
-      ]
+    const newTurnId = `turn-${Date.now()}`
+    const snapshot = turns
+    const newTurn: ResearchTurn = {
+      id: newTurnId,
+      turn_index: snapshot.length + 1,
+      user_query: query,
+      mode: selectedMode,
+      status: 'searching' as any,
+      assistant_answer: '',
+      sources: [],
+      react_steps: [],
+      follow_ups: [],
+      created_at: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     }
 
-    setTurns(prev => prev.map(t => t.id === activeTurn.id ? updatedTurn : t))
+    setTurns(prev => [newTurn, ...prev])
+    setActiveTurnId(newTurnId)
+    setInputQuery('')
+
+    try {
+      const res = await fetch('/api/research', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, mode: selectedMode, history: buildHistory(snapshot) }),
+      })
+      const data = await res.json()
+      setTurns(prev => prev.map(t => t.id === newTurnId ? {
+        ...t,
+        status: data.status,
+        assistant_answer: data.assistant_answer,
+        sources: data.sources,
+        react_steps: data.react_steps,
+        follow_ups: data.follow_ups,
+        clarify_prompt: data.clarify_prompt,
+      } : t))
+    } catch {
+      setTurns(prev => prev.map(t => t.id === newTurnId
+        ? { ...t, status: 'error', assistant_answer: 'Không kết nối được server. Hãy chạy: uvicorn server:app --reload' }
+        : t))
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+    submitQuery(inputQuery)
+  }
+
+  const handleClarifyOptionSelect = async (optionText: string) => {
+    if (isSearching) return
+    setIsSearching(true)
+
+    const history = [
+      ...buildHistory(turns.filter(t => t.id !== activeTurn.id)),
+      { role: 'user', content: activeTurn.user_query },
+      { role: 'assistant', content: activeTurn.clarify_prompt?.question || activeTurn.assistant_answer },
+    ]
+
+    setTurns(prev => prev.map(t => t.id === activeTurn.id ? { ...t, status: 'searching' as any } : t))
+
+    try {
+      const res = await fetch('/api/research', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: optionText, mode: activeTurn.mode, history }),
+      })
+      const data = await res.json()
+      setTurns(prev => prev.map(t => t.id === activeTurn.id ? {
+        ...t,
+        status: data.status,
+        assistant_answer: data.assistant_answer,
+        sources: data.sources,
+        react_steps: [...t.react_steps, ...data.react_steps],
+        follow_ups: data.follow_ups,
+        clarify_prompt: data.clarify_prompt,
+      } : t))
+    } catch {
+      setTurns(prev => prev.map(t => t.id === activeTurn.id ? { ...t, status: 'error' } : t))
+    } finally {
+      setIsSearching(false)
+    }
   }
 
   return (
@@ -518,7 +534,7 @@ const App = () => {
                   {activeTurn.follow_ups.map((fq, i) => (
                     <button
                       key={i}
-                      onClick={() => { setInputQuery(fq); handleSearchSubmit(); }}
+                      onClick={() => submitQuery(fq)}
                       className="w-full text-left p-3 bg-[#080808] hover:bg-[#1a1a1a] border border-zinc-800 hover:border-[#b86848] radius-sm text-xs text-zinc-300 hover:text-white transition-all flex items-center justify-between font-mono"
                     >
                       <span>• {fq}</span>

@@ -17,6 +17,13 @@ from .policy.tool import search_company_policy
 from .social_search.tool import search_tweets
 from .send.tool import send_telegram
 from .lookup.tool import web_search
+from .reddit_search.tool import search_reddit
+from .github_search.tool import search_github
+from .semantic_scholar.tool import search_semantic_scholar
+from .pdf_read.tool import read_pdf
+from .github_file.tool import read_github_file
+from .stackoverflow.tool import search_stackoverflow
+from .trending.tool import get_trending
 
 
 # NOTE (starter_v0): tool names here are intentionally vague. These keys are the
@@ -35,6 +42,13 @@ TOOL_FUNCTIONS = {
     "policy": search_company_policy,
     "papers": arxiv_search,
     "paper_text": get_arxiv_paper_text,
+    "reddit_search": search_reddit,
+    "github_search": search_github,
+    "semantic_scholar": search_semantic_scholar,
+    "pdf_read": read_pdf,
+    "github_file": read_github_file,
+    "stackoverflow": search_stackoverflow,
+    "trending": get_trending,
 }
 
 

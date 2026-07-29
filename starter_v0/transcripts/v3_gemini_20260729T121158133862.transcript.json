@@ -1,0 +1,344 @@
+{
+  "transcript_id": "v3_gemini_20260729T121158133862",
+  "version": "v3",
+  "artifact_version": "v3+p2f1e8af6a11b+t63ccd2b02276",
+  "prompt_hash": "2f1e8af6a11bf9714702cf7ac3abf1e7edcbea29b7b5cca5724e9303f7077f78",
+  "tools_hash": "63ccd2b0227638a90072193d9e6215c9442fc673a670ca83bf508606a6d12d4b",
+  "provider": "gemini",
+  "model": "gemma-4-26b-a4b-it",
+  "system_prompt": "E:\\AI\\Lab\\Day04-2A202601017-NguyenThanhAn\\starter_v0\\artifacts\\system_prompt.md",
+  "tools": "E:\\AI\\Lab\\Day04-2A202601017-NguyenThanhAn\\starter_v0\\artifacts\\tools.yaml",
+  "history_window": 5,
+  "max_tool_rounds": 4,
+  "created_at": "2026-07-29T12:11:58",
+  "updated_at": "2026-07-29T12:13:13",
+  "turns": [
+    {
+      "turn_index": 1,
+      "started_at": "2026-07-29T12:11:58",
+      "user": "Tin AI hôm nay có gì nổi bật?",
+      "status": "provider_error",
+      "assistant_text": null,
+      "rounds": [],
+      "tool_events": [],
+      "error": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 16000, model: gemma-4-26b\\nPlease retry in 30.610045919s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_input_token_count', 'quotaId': 'GenerateContentInputTokensPerModelPerMinute-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemma-4-26b'}, 'quotaValue': '16000'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '30s'}]}}",
+      "ended_at": "2026-07-29T12:12:29"
+    },
+    {
+      "turn_index": 2,
+      "started_at": "2026-07-29T12:12:29",
+      "user": "Tóm tắt 5 tweet mới nhất của @karpathy giúp mình",
+      "status": "answered",
+      "assistant_text": "The user wants a summary of the 5 latest tweets from @karpathy.\nI have already called the `timeline` tool to get the tweets and then the `format` tool to create a bulleted summary.\nThe `format` tool returned a markdown-formatted summary.\nI should now present this result to the user.\nDưới đây là tóm tắt 5 tweet mới nhất của @karpathy:\n\n- Karpathy chia sẻ mẹo sử dụng chế độ nói (voice/ramble session) để làm việc với LLM. Việc nói liên tục (dù lộn xộn) trong khoảng 10 phút giúp LLM hiểu sâu hơn ý định của người dùng và tái cấu trúc các ý tưởng thành kết quả rõ ràng hơn. - [@karpathy](https://x.com/karpathy/status/2079610838143623371)\n- Chia sẻ về việc viết lại Bun bằng ngôn ngữ Rust. - [@karpathy](https://x.com/karpathy/status/2075266731170537506)\n- Chia sẻ về các bản demo 3D ấn tượng từ các prompt khó tại Fable. - [@karpathy](https://x.com/karpathy/status/2073496962566164990)\n- Etched chính thức rời khỏi giai đoạn ẩn danh (stealth mode) sau khi hoàn thành A0 tapeout và đạt được các hợp đồng khách hàng lớn. - [@karpathy](https://x.com/karpathy/status/2072051876816945486)\n- Chia sẻ một liên kết từ EngramLab. - [@karpathy](https://x.com/karpathy/status/2069579404163031082)",
+      "rounds": [
+        {
+          "round": 1,
+          "assistant_text": "The user wants a summary of the 5 latest tweets from @karpathy.\nI should use the `timeline` tool.\nThe `screenname` is \"karpathy\".\nThe `limit` is 5.",
+          "tool_calls": [
+            {
+              "name": "timeline",
+              "args": {
+                "screenname": "karpathy",
+                "limit": 5
+              }
+            }
+          ],
+          "tool_results": [
+            {
+              "tool": "timeline",
+              "args": {
+                "screenname": "karpathy",
+                "limit": 5
+              },
+              "result": {
+                "tool": "get_user_tweets",
+                "screenname": "karpathy",
+                "items": [
+                  {
+                    "title": "One pattern I find useful for working with LLMs is a nice long ramble session. Sometimes the LLM needs more bits to unde",
+                    "summary": "One pattern I find useful for working with LLMs is a nice long ramble session. Sometimes the LLM needs more bits to understand what you're trying to achieve, but you're too lazy to type them. In these cases I like to lean back, switch to /voice and just ramble for like 10 minutes, total mess, anything goes, full stream of consciousness. Sometimes I declare it up top, something like \"switching to speech recognition sorry for any typos...\". Sometimes I turn it into a small interview of a few turns. But I find that the LLMs are somehow very good at reconstructing long incoherent rambles and often their echo of your own tangle of thoughts comes out quite a bit cleaner than what you started with. The result is that you improve the mind meld and have to correct things less from that point on.",
+                    "url": "https://x.com/karpathy/status/2079610838143623371",
+                    "source": "@karpathy",
+                    "date": "Tue Jul 21 16:53:55 +0000 2026",
+                    "metrics": {
+                      "favorites": 48641,
+                      "retweets": 4061,
+                      "views": "3898016"
+                    }
+                  },
+                  {
+                    "title": "RT @jarredsumner: Rewriting Bun in Rust",
+                    "summary": "RT @jarredsumner: Rewriting Bun in Rust\n\nhttps://t.co/Rl8bcaxBFc",
+                    "url": "https://x.com/karpathy/status/2075266731170537506",
+                    "source": "@karpathy",
+                    "date": "Thu Jul 09 17:11:59 +0000 2026",
+                    "metrics": {
+                      "favorites": 0,
+                      "retweets": 1094,
+                      "views": "40706"
+                    }
+                  },
+                  {
+                    "title": "RT @petergostev: I spent a LOT of time through the hardest 3D prompts at Fable, it is a 45 min video, but I have 60+ ver",
+                    "summary": "RT @petergostev: I spent a LOT of time through the hardest 3D prompts at Fable, it is a 45 min video, but I have 60+ very cool demos for yo…",
+                    "url": "https://x.com/karpathy/status/2073496962566164990",
+                    "source": "@karpathy",
+                    "date": "Sat Jul 04 19:59:34 +0000 2026",
+                    "metrics": {
+                      "favorites": 0,
+                      "retweets": 166,
+                      "views": "40696"
+                    }
+                  },
+                  {
+                    "title": "RT @Etched: We're coming out of stealth.",
+                    "summary": "RT @Etched: We're coming out of stealth.\n\nWe've built our first racks after a successful A0 tapeout, $1B+ in customer contracts, and $800m…",
+                    "url": "https://x.com/karpathy/status/2072051876816945486",
+                    "source": "@karpathy",
+                    "date": "Tue Jun 30 20:17:18 +0000 2026",
+                    "metrics": {
+                      "favorites": 0,
+                      "retweets": 943,
+                      "views": "41084"
+                    }
+                  },
+                  {
+                    "title": "RT @EngramLab: https://t.co/CGIef5lIBI",
+                    "summary": "RT @EngramLab: https://t.co/CGIef5lIBI",
+                    "url": "https://x.com/karpathy/status/2069579404163031082",
+                    "source": "@karpathy",
+                    "date": "Wed Jun 24 00:32:35 +0000 2026",
+                    "metrics": {
+                      "favorites": 0,
+                      "retweets": 248,
+                      "views": "39811"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "round": 2,
+          "assistant_text": "The user wants a summary of the 5 latest tweets from @karpathy.\nI have retrieved the 5 latest tweets using the `timeline` tool.\n\nThe tweets are:\n1. A personal tip about using voice/ramble sessions with LLMs to improve understanding and \"mind meld\".\n2. A retweet of @jarredsumner about rewriting Bun in Rust.\n3. A retweet of @petergostev about 3D prompts at Fable.\n4. A retweet of @Etched about coming out of stealth (A0 tapeout, $1B+ contracts).\n5. A retweet of @EngramLab with a link.\n\nI should use the `format` tool to present this information nicely.\nThe template `sections` or `bullets` would work well. I'll use `sections` to group them or just `bullets` for a quick summary. Given the request is \"Tóm tắt\" (Summarize), a bulleted list or a structured format is best.\n\nLet's prepare the `items` for the `format` tool.\n\nItem 1:\n- title: \"Mẹo làm việc với LLM: Sử dụng chế độ nói (ramble session)\"\n- summary: \"Karpathy chia sẻ rằng việc sử dụng tính năng giọng nói để nói liên tục (ramble) trong khoảng 10 phút giúp LLM hiểu rõ hơn ý định của người dùng, ngay cả khi nội dung nói không mạch lạc. LLM có khả năng tái cấu trúc các ý tưởng lộn xộn này thành một kết quả sạch sẽ và rõ ràng hơn.\"\n- source: \"@karpathy\"\n- url: \"https://x.com/karpathy/status/2079610838143623371\"\n\nItem 2:\n- title: \"RT @jarredsumner: Viết lại Bun bằng Rust\"\n- summary: \"Chia sẻ về việc viết lại Bun bằng ngôn ngữ Rust.\"\n- source: \"@karpathy\"\n- url: \"https://x.com/karpathy/status/2075266731170537506\"\n\nItem 3:\n- title: \"RT @petergostev: Thử thách với các prompt 3D tại Fable\"\n- summary: \"Chia sẻ về các bản demo 3D ấn tượng từ các prompt khó tại Fable.\"\n- source: \"@karpathy\"\n- url: \"https://x.com/karpathy/status/2073496962566164990\"\n\nItem 4:\n- title: \"RT @Etched: Công bố bước tiến mới\"\n- summary: \"Etched chính thức rời khỏi giai đoạn ẩn danh (stealth mode) sau khi hoàn thành A0 tapeout, đạt hơn 1 tỷ USD hợp đồng khách hàng và 800 triệu USD...\"\n- source: \"@karpathy\"\n- url: \"https://x.com/karpathy/status/2072051876816945486\"\n\nItem 5:\n- title: \"RT @EngramLab\"\n- summary: \"Chia sẻ một liên kết từ EngramLab.\"\n- source: \"@karpathy\"\n- url: \"https://x.com/karpathy/status/2069579404163031082\"\n\nI will use the `format` tool with `template=\"bullets\"`.",
+          "tool_calls": [
+            {
+              "name": "format",
+              "args": {
+                "headline": "Tóm tắt 5 tweet mới nhất của @karpathy",
+                "template": "bullets",
+                "items": [
+                  {
+                    "source": "@karpathy",
+                    "summary": "Karpathy chia sẻ mẹo sử dụng chế độ nói (voice/ramble session) để làm việc với LLM. Việc nói liên tục (dù lộn xộn) trong khoảng 10 phút giúp LLM hiểu sâu hơn ý định của người dùng và tái cấu trúc các ý tưởng thành kết quả rõ ràng hơn.",
+                    "url": "https://x.com/karpathy/status/2079610838143623371",
+                    "title": "Mẹo làm việc với LLM: Sử dụng chế độ nói (ramble session)"
+                  },
+                  {
+                    "title": "RT @jarredsumner: Viết lại Bun bằng Rust",
+                    "source": "@karpathy",
+                    "summary": "Chia sẻ về việc viết lại Bun bằng ngôn ngữ Rust.",
+                    "url": "https://x.com/karpathy/status/2075266731170537506"
+                  },
+                  {
+                    "url": "https://x.com/karpathy/status/2073496962566164990",
+                    "source": "@karpathy",
+                    "title": "RT @petergostev: Thử thách với các prompt 3D tại Fable",
+                    "summary": "Chia sẻ về các bản demo 3D ấn tượng từ các prompt khó tại Fable."
+                  },
+                  {
+                    "summary": "Etched chính thức rời khỏi giai đoạn ẩn danh (stealth mode) sau khi hoàn thành A0 tapeout và đạt được các hợp đồng khách hàng lớn.",
+                    "url": "https://x.com/karpathy/status/2072051876816945486",
+                    "source": "@karpathy",
+                    "title": "RT @Etched: Công bố bước tiến mới"
+                  },
+                  {
+                    "url": "https://x.com/karpathy/status/2069579404163031082",
+                    "title": "RT @EngramLab",
+                    "source": "@karpathy",
+                    "summary": "Chia sẻ một liên kết từ EngramLab."
+                  }
+                ]
+              }
+            }
+          ],
+          "tool_results": [
+            {
+              "tool": "format",
+              "args": {
+                "headline": "Tóm tắt 5 tweet mới nhất của @karpathy",
+                "template": "bullets",
+                "items": [
+                  {
+                    "source": "@karpathy",
+                    "summary": "Karpathy chia sẻ mẹo sử dụng chế độ nói (voice/ramble session) để làm việc với LLM. Việc nói liên tục (dù lộn xộn) trong khoảng 10 phút giúp LLM hiểu sâu hơn ý định của người dùng và tái cấu trúc các ý tưởng thành kết quả rõ ràng hơn.",
+                    "url": "https://x.com/karpathy/status/2079610838143623371",
+                    "title": "Mẹo làm việc với LLM: Sử dụng chế độ nói (ramble session)"
+                  },
+                  {
+                    "title": "RT @jarredsumner: Viết lại Bun bằng Rust",
+                    "source": "@karpathy",
+                    "summary": "Chia sẻ về việc viết lại Bun bằng ngôn ngữ Rust.",
+                    "url": "https://x.com/karpathy/status/2075266731170537506"
+                  },
+                  {
+                    "url": "https://x.com/karpathy/status/2073496962566164990",
+                    "source": "@karpathy",
+                    "title": "RT @petergostev: Thử thách với các prompt 3D tại Fable",
+                    "summary": "Chia sẻ về các bản demo 3D ấn tượng từ các prompt khó tại Fable."
+                  },
+                  {
+                    "summary": "Etched chính thức rời khỏi giai đoạn ẩn danh (stealth mode) sau khi hoàn thành A0 tapeout và đạt được các hợp đồng khách hàng lớn.",
+                    "url": "https://x.com/karpathy/status/2072051876816945486",
+                    "source": "@karpathy",
+                    "title": "RT @Etched: Công bố bước tiến mới"
+                  },
+                  {
+                    "url": "https://x.com/karpathy/status/2069579404163031082",
+                    "title": "RT @EngramLab",
+                    "source": "@karpathy",
+                    "summary": "Chia sẻ một liên kết từ EngramLab."
+                  }
+                ]
+              },
+              "result": {
+                "tool": "render_digest",
+                "template": "bullets",
+                "markdown": "- Karpathy chia sẻ mẹo sử dụng chế độ nói (voice/ramble session) để làm việc với LLM. Việc nói liên tục (dù lộn xộn) trong khoảng 10 phút giúp LLM hiểu sâu hơn ý định của người dùng và tái cấu trúc các ý tưởng thành kết quả rõ ràng hơn. - [@karpathy](https://x.com/karpathy/status/2079610838143623371)\n- Chia sẻ về việc viết lại Bun bằng ngôn ngữ Rust. - [@karpathy](https://x.com/karpathy/status/2075266731170537506)\n- Chia sẻ về các bản demo 3D ấn tượng từ các prompt khó tại Fable. - [@karpathy](https://x.com/karpathy/status/2073496962566164990)\n- Etched chính thức rời khỏi giai đoạn ẩn danh (stealth mode) sau khi hoàn thành A0 tapeout và đạt được các hợp đồng khách hàng lớn. - [@karpathy](https://x.com/karpathy/status/2072051876816945486)\n- Chia sẻ một liên kết từ EngramLab. - [@karpathy](https://x.com/karpathy/status/2069579404163031082)",
+                "item_count": 5
+              }
+            }
+          ]
+        },
+        {
+          "round": 3,
+          "assistant_text": "The user wants a summary of the 5 latest tweets from @karpathy.\nI have already called the `timeline` tool to get the tweets and then the `format` tool to create a bulleted summary.\nThe `format` tool returned a markdown-formatted summary.\nI should now present this result to the user.\nDưới đây là tóm tắt 5 tweet mới nhất của @karpathy:\n\n- Karpathy chia sẻ mẹo sử dụng chế độ nói (voice/ramble session) để làm việc với LLM. Việc nói liên tục (dù lộn xộn) trong khoảng 10 phút giúp LLM hiểu sâu hơn ý định của người dùng và tái cấu trúc các ý tưởng thành kết quả rõ ràng hơn. - [@karpathy](https://x.com/karpathy/status/2079610838143623371)\n- Chia sẻ về việc viết lại Bun bằng ngôn ngữ Rust. - [@karpathy](https://x.com/karpathy/status/2075266731170537506)\n- Chia sẻ về các bản demo 3D ấn tượng từ các prompt khó tại Fable. - [@karpathy](https://x.com/karpathy/status/2073496962566164990)\n- Etched chính thức rời khỏi giai đoạn ẩn danh (stealth mode) sau khi hoàn thành A0 tapeout và đạt được các hợp đồng khách hàng lớn. - [@karpathy](https://x.com/karpathy/status/2072051876816945486)\n- Chia sẻ một liên kết từ EngramLab. - [@karpathy](https://x.com/karpathy/status/2069579404163031082)",
+          "tool_calls": [],
+          "tool_results": []
+        }
+      ],
+      "tool_events": [
+        {
+          "tool": "timeline",
+          "args": {
+            "screenname": "karpathy",
+            "limit": 5
+          },
+          "result": {
+            "tool": "get_user_tweets",
+            "screenname": "karpathy",
+            "items": [
+              {
+                "title": "One pattern I find useful for working with LLMs is a nice long ramble session. Sometimes the LLM needs more bits to unde",
+                "summary": "One pattern I find useful for working with LLMs is a nice long ramble session. Sometimes the LLM needs more bits to understand what you're trying to achieve, but you're too lazy to type them. In these cases I like to lean back, switch to /voice and just ramble for like 10 minutes, total mess, anything goes, full stream of consciousness. Sometimes I declare it up top, something like \"switching to speech recognition sorry for any typos...\". Sometimes I turn it into a small interview of a few turns. But I find that the LLMs are somehow very good at reconstructing long incoherent rambles and often their echo of your own tangle of thoughts comes out quite a bit cleaner than what you started with. The result is that you improve the mind meld and have to correct things less from that point on.",
+                "url": "https://x.com/karpathy/status/2079610838143623371",
+                "source": "@karpathy",
+                "date": "Tue Jul 21 16:53:55 +0000 2026",
+                "metrics": {
+                  "favorites": 48641,
+                  "retweets": 4061,
+                  "views": "3898016"
+                }
+              },
+              {
+                "title": "RT @jarredsumner: Rewriting Bun in Rust",
+                "summary": "RT @jarredsumner: Rewriting Bun in Rust\n\nhttps://t.co/Rl8bcaxBFc",
+                "url": "https://x.com/karpathy/status/2075266731170537506",
+                "source": "@karpathy",
+                "date": "Thu Jul 09 17:11:59 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 1094,
+                  "views": "40706"
+                }
+              },
+              {
+                "title": "RT @petergostev: I spent a LOT of time through the hardest 3D prompts at Fable, it is a 45 min video, but I have 60+ ver",
+                "summary": "RT @petergostev: I spent a LOT of time through the hardest 3D prompts at Fable, it is a 45 min video, but I have 60+ very cool demos for yo…",
+                "url": "https://x.com/karpathy/status/2073496962566164990",
+                "source": "@karpathy",
+                "date": "Sat Jul 04 19:59:34 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 166,
+                  "views": "40696"
+                }
+              },
+              {
+                "title": "RT @Etched: We're coming out of stealth.",
+                "summary": "RT @Etched: We're coming out of stealth.\n\nWe've built our first racks after a successful A0 tapeout, $1B+ in customer contracts, and $800m…",
+                "url": "https://x.com/karpathy/status/2072051876816945486",
+                "source": "@karpathy",
+                "date": "Tue Jun 30 20:17:18 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 943,
+                  "views": "41084"
+                }
+              },
+              {
+                "title": "RT @EngramLab: https://t.co/CGIef5lIBI",
+                "summary": "RT @EngramLab: https://t.co/CGIef5lIBI",
+                "url": "https://x.com/karpathy/status/2069579404163031082",
+                "source": "@karpathy",
+                "date": "Wed Jun 24 00:32:35 +0000 2026",
+                "metrics": {
+                  "favorites": 0,
+                  "retweets": 248,
+                  "views": "39811"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "tool": "format",
+          "args": {
+            "headline": "Tóm tắt 5 tweet mới nhất của @karpathy",
+            "template": "bullets",
+            "items": [
+              {
+                "source": "@karpathy",
+                "summary": "Karpathy chia sẻ mẹo sử dụng chế độ nói (voice/ramble session) để làm việc với LLM. Việc nói liên tục (dù lộn xộn) trong khoảng 10 phút giúp LLM hiểu sâu hơn ý định của người dùng và tái cấu trúc các ý tưởng thành kết quả rõ ràng hơn.",
+                "url": "https://x.com/karpathy/status/2079610838143623371",
+                "title": "Mẹo làm việc với LLM: Sử dụng chế độ nói (ramble session)"
+              },
+              {
+                "title": "RT @jarredsumner: Viết lại Bun bằng Rust",
+                "source": "@karpathy",
+                "summary": "Chia sẻ về việc viết lại Bun bằng ngôn ngữ Rust.",
+                "url": "https://x.com/karpathy/status/2075266731170537506"
+              },
+              {
+                "url": "https://x.com/karpathy/status/2073496962566164990",
+                "source": "@karpathy",
+                "title": "RT @petergostev: Thử thách với các prompt 3D tại Fable",
+                "summary": "Chia sẻ về các bản demo 3D ấn tượng từ các prompt khó tại Fable."
+              },
+              {
+                "summary": "Etched chính thức rời khỏi giai đoạn ẩn danh (stealth mode) sau khi hoàn thành A0 tapeout và đạt được các hợp đồng khách hàng lớn.",
+                "url": "https://x.com/karpathy/status/2072051876816945486",
+                "source": "@karpathy",
+                "title": "RT @Etched: Công bố bước tiến mới"
+              },
+              {
+                "url": "https://x.com/karpathy/status/2069579404163031082",
+                "title": "RT @EngramLab",
+                "source": "@karpathy",
+                "summary": "Chia sẻ một liên kết từ EngramLab."
+              }
+            ]
+          },
+          "result": {
+            "tool": "render_digest",
+            "template": "bullets",
+            "markdown": "- Karpathy chia sẻ mẹo sử dụng chế độ nói (voice/ramble session) để làm việc với LLM. Việc nói liên tục (dù lộn xộn) trong khoảng 10 phút giúp LLM hiểu sâu hơn ý định của người dùng và tái cấu trúc các ý tưởng thành kết quả rõ ràng hơn. - [@karpathy](https://x.com/karpathy/status/2079610838143623371)\n- Chia sẻ về việc viết lại Bun bằng ngôn ngữ Rust. - [@karpathy](https://x.com/karpathy/status/2075266731170537506)\n- Chia sẻ về các bản demo 3D ấn tượng từ các prompt khó tại Fable. - [@karpathy](https://x.com/karpathy/status/2073496962566164990)\n- Etched chính thức rời khỏi giai đoạn ẩn danh (stealth mode) sau khi hoàn thành A0 tapeout và đạt được các hợp đồng khách hàng lớn. - [@karpathy](https://x.com/karpathy/status/2072051876816945486)\n- Chia sẻ một liên kết từ EngramLab. - [@karpathy](https://x.com/karpathy/status/2069579404163031082)",
+            "item_count": 5
+          }
+        }
+      ],
+      "ended_at": "2026-07-29T12:13:13"
+    }
+  ]
+}
