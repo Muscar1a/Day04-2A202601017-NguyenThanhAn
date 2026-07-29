@@ -1,1 +1,2 @@
 version,author,changed_artifact,artifact_version,prompt_hash,tools_hash,reason,hypothesis,metric_name,metric_before,metric_after,run_file
+v0,NguyenThanhAn,baseline,v0+pf0c107a9d7a1+t011c271ef0bb,pf0c107a9d7a1,t011c271ef0bb,Baseline chạy với system_prompt và tools.yaml mặc định chưa tối ưu,System prompt bảo agent đoán bừa thay vì hỏi lại; tools.yaml thiếu convention cho lookup (topic/timeframe/query format); không có multi-turn carry rule → case_accuracy thấp,case_accuracy,,0.40,v0_B_base_openrouter_20260729T103234896651.json

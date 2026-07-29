@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+:root {
+  /* Dark Luxe Aesthetic — Pitch Black & Warm Copper Accent */
+  --color-canvas: #080808;
+  --color-surface-1: #121212;
+  --color-surface-2: #1a1a1a;
+  --color-surface-3: #242424;
+
+  --color-ink-1: #ffffff;
+  --color-ink-2: #a1a1aa;
+  --color-ink-3: #71717a;
+
+  --color-line: #27272a;
+  --color-line-strong: #3f3f46;
+
+  /* Copper / Bronze Accent */
+  --color-copper: #b86848;
+  --color-copper-dark: #8c462b;
+  --color-copper-light: #d98866;
+
+  --lens-fill: rgba(18, 18, 18, 0.85);
+  --lens-border: rgba(255, 255, 255, 0.08);
+  --lens-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+  --lens-blur: 20px;
+}
+
+/* Typography */
+.font-sans {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.font-serif {
+  font-family: 'Newsreader', Georgia, serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', Consolas, monospace;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--color-canvas);
+  color: var(--color-ink-1);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Radius scale */
+.radius-xs { border-radius: 6px; }
+.radius-sm { border-radius: 10px; }
+.radius-md { border-radius: 14px; }
+.radius-lg { border-radius: 20px; }
+.radius-xl { border-radius: 28px; }
+.radius-pill { border-radius: 9999px; }
+
+/* Dark Material Cards */
+.paper {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-line);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.paper-interactive {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-line);
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.paper-interactive:hover {
+  border-color: var(--color-copper);
+  background: var(--color-surface-2);
+  transform: translateY(-2px);
+}
+
+/* Liquid Lens Glass Header */
+.lens {
+  background: var(--lens-fill);
+  border-bottom: 1px solid var(--lens-border);
+  box-shadow: var(--lens-shadow);
+  backdrop-filter: blur(var(--lens-blur));
+  -webkit-backdrop-filter: blur(var(--lens-blur));
+}
+
+/* Copper Pill Badge */
+.copper-badge {
+  background-color: rgba(184, 104, 72, 0.18);
+  color: var(--color-copper-light);
+  border: 1px solid rgba(184, 104, 72, 0.4);
+}
+
+/* Gauge Slider Bar */
+.gauge-track {
+  height: 4px;
+  background: #27272a;
+  border-radius: 9999px;
+  position: relative;
+}
+
+.gauge-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #b86848, #d98866);
+  border-radius: 9999px;
+}
+
+.gauge-thumb {
+  width: 24px;
+  height: 24px;
+  background: #ffffff;
+  border: 3px solid #b86848;
+  border-radius: 9999px;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 12px rgba(184, 104, 72, 0.5);
+}
+
+/* Watermark Ring Graphic */
+.fingerprint-bg {
+  background-image: radial-gradient(circle at 100% 100%, rgba(184, 104, 72, 0.12) 0%, transparent 60%),
+                    repeating-radial-gradient(circle at 90% 100%, transparent 0, transparent 12px, rgba(255, 255, 255, 0.03) 13px, transparent 14px);
+}
+
+/* Motion timing */
+.transition-standard { transition-duration: 220ms; }

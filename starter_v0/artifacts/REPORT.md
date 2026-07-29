@@ -16,7 +16,7 @@
 
 ## A1. Agent này làm được gì
 
-> 1–2 câu mô tả agent dùng để làm gì.
+> Agent tìm kiếm và trả lời câu hỏi bằng cách kết hợp truy xuất thông tin từ Internet với khả năng tổng hợp của LLM. Agent tự lập kế hoạch tìm kiếm, tổng hợp nhiều nguồn đáng tin cậy và tạo câu trả lời có trích dẫn để đảm bảo tính chính xác và minh bạch.
 
 Ví dụ: "Research agent: tìm tin theo từ khóa / theo tài khoản, đọc URL và tổng hợp thành digest."
 
@@ -32,9 +32,23 @@ Ví dụ: "Research agent: tìm tin theo từ khóa / theo tài khoản, đọc 
 
 | Tên tool | Làm được gì | Tool mới nhóm thêm? |
 |---|---|---|
-| clarify | hỏi lại người dùng khi thiếu thông tin | không |
-|  |  |  |
-|  |  |  |
+| clarify | Hỏi lại người dùng khi thiếu thông tin hoặc cần xác nhận trước hành động nhạy cảm | không |
+| timeline | Lấy các bài đăng gần đây của một tài khoản X/Twitter cụ thể (theo handle) | không |
+| social_search | Tìm bài đăng trên X/Twitter theo từ khóa; hỗ trợ sắp xếp Latest hoặc Top | không |
+| lookup | Tìm kiếm thông tin trên web qua Tavily; hỗ trợ topic (general/news) và timeframe | không |
+| fetch | Đọc toàn bộ nội dung của một URL cụ thể qua Firecrawl | không |
+| format | Trình bày danh sách item đã thu thập thành markdown digest (không fetch thêm dữ liệu) | không |
+| send | Gửi văn bản lên Telegram channel; chỉ gửi khi confirmed=true | không |
+| policy | Tìm kiếm trong tài liệu nội bộ company policy (markdown folder) | không |
+| papers | Tìm bài báo khoa học trên arXiv theo từ khóa | không |
+| paper_text | Tải PDF từ arXiv và trích xuất text cục bộ bằng pypdf | không |
+| reddit_search | Tìm thảo luận trên Reddit theo từ khóa hoặc subreddit cụ thể | **có** |
+| github_search | Tìm repository / code trên GitHub theo từ khóa | **có** |
+| semantic_scholar | Tìm bài báo học thuật đa lĩnh vực qua Semantic Scholar (rộng hơn arXiv) | **có** |
+| pdf_read | Đọc và trích xuất text từ bất kỳ PDF nào có URL (không chỉ arXiv) | **có** |
+| github_file | Đọc nội dung file hoặc thư mục trong một GitHub repository | **có** |
+| stackoverflow | Tìm câu hỏi và câu trả lời trên Stack Overflow theo từ khóa hoặc tag | **có** |
+| trending | Lấy danh sách trending topics trên X/Twitter theo quốc gia | **có** |
 
 ## A3. Câu hỏi mẫu để thử
 
@@ -64,7 +78,7 @@ Fill from `artifacts/version_log.csv` and `runs/*.json`.
 
 | Version | Prompt/tool change | Hypothesis | Metric name | Before | After | Run File |
 |---|---|---|---|---:|---:|---|
-| v0 | baseline |  |  |  |  |  |
+| v0 | baseline | — | case_accuracy | — | 0.40 | v0_B_base_openrouter_20260729T103234896651.json |
 | v1 |  |  |  |  |  |  |
 | v2 |  |  |  |  |  |  |
 | v3 |  |  |  |  |  |  |
@@ -75,7 +89,18 @@ Use actual failures from `results[*].result.failures`.
 
 | Case ID | Failure Type | Actual Tool Calls | What Failed | Fix |
 |---|---|---|---|---|
-|  |  |  |  |  |
+| R03 | wrong_arg_value | lookup + social_search | query="AI news today latest breakthroughs" (verbose), topic=general thay vì news, gọi thêm social_search không cần | Thêm convention query=keyword ngắn, topic=news khi có "tin tức" vào `tools.yaml` |
+| R05 | wrong_arg_value | timeline | limit=None thay vì 10 | Thêm convention trích limit từ số trong câu vào `tools.yaml` |
+| R06 | wrong_arg_value | lookup | topic=general thay vì news, timeframe=None thay vì week | Thêm trigger "tuần này/hôm nay" → timeframe vào `tools.yaml` |
+| R10 | missing_info | timeline(screenname=sama) | Đoán bừa handle thay vì gọi clarify | Thêm rule "thiếu handle → clarify bắt buộc" vào `system_prompt.md` |
+| R12 | wrong_boundary | clarify(response_type=text) | Gọi đúng clarify nhưng sai response_type (text thay vì yes_no) | Thêm rule "hành động ghi → clarify(yes_no)" vào `system_prompt.md` |
+| R13 | wrong_arg_value | lookup + social_search | query verbose, topic=general, timeframe=None | Cùng fix với R03/R06 trong `tools.yaml` |
+| M01 | wrong_arg_value | timeline | limit=None (không carry limit=5 từ turn 1) | Thêm multi-turn carry rule vào `system_prompt.md` |
+| M02 | wrong_arg_value | lookup | query="robotics news today" (verbose), topic=general | Fix tools.yaml convention + system_prompt carry rule |
+| M03 | wrong_arg_value | timeline × 3 | limit=None, gọi timeline 3 lần (một cho mỗi turn) | Thêm rule "chỉ xử lý latest turn" vào `system_prompt.md` |
+| M04 | missing_info | (không gọi tool) | Sau khi user cung cấp URL, latest turn xác nhận → model trả text, không gọi fetch | Thêm rule "turn xác nhận sau khi có đủ info → trigger tool" vào `system_prompt.md` |
+| M05 | wrong_arg_value | timeline | limit=None (không carry limit=3 từ turn 2) | Cùng fix với M01 |
+| M06 | wrong_arg_value | lookup | query="OpenAI news latest" (verbose), topic=general | Cùng fix với R03 trong `tools.yaml` |
 
 ## B3. Team eval cases
 
